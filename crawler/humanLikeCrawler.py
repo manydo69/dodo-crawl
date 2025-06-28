@@ -36,19 +36,19 @@ def zip_folder(folder_path):
 
 # ===== MÔ PHỎNG HÀNH VI NGƯỜI DÙNG =====
 def random_pause():
-    wait_time = random.uniform(2, 3)
+    wait_time = random.uniform(0.1, 1)
     print(f"⏳ Waiting {wait_time:.1f} seconds like a human...")
     time.sleep(wait_time)
 
 def human_scroll():
-    scroll_steps = random.randint(3, 5)
+    scroll_steps = random.randint(1, 3)
     for _ in range(scroll_steps):
         driver.execute_script("window.scrollBy(0, window.innerHeight / 2);")
         time.sleep(random.uniform(0.5, 1.5))
 
 # ===== LẤY DANH SÁCH TẤT CẢ CÁC CHƯƠNG TỪ DROPDOWN =====
-def get_chapter_list():
-    driver.get("https://langgeek.net/invincible/chuong-1-50/")
+def get_chapter_list(comic_url):
+    driver.get(comic_url)
     time.sleep(5)
 
     select = Select(driver.find_element(By.CLASS_NAME, "change_issue_select"))
