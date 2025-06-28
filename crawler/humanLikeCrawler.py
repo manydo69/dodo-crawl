@@ -13,10 +13,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 from s3_API.api import upload_to_r2
 
-# ===== TẠO CLOUDSCRAPER BỎ QUA CLOUDFLARE =====
 scraper = cloudscraper.create_scraper(browser={'browser': 'chrome', 'platform': 'windows', 'mobile': False})
 
-# ===== CẤU HÌNH CHROME =====
 options = Options()
 options.add_argument("--start-maximized")
 options.add_argument("--disable-blink-features=AutomationControlled")
@@ -38,12 +36,12 @@ def zip_folder(folder_path):
 
 # ===== MÔ PHỎNG HÀNH VI NGƯỜI DÙNG =====
 def random_pause():
-    wait_time = random.uniform(4, 9)
+    wait_time = random.uniform(2, 3)
     print(f"⏳ Waiting {wait_time:.1f} seconds like a human...")
     time.sleep(wait_time)
 
 def human_scroll():
-    scroll_steps = random.randint(3, 6)
+    scroll_steps = random.randint(3, 5)
     for _ in range(scroll_steps):
         driver.execute_script("window.scrollBy(0, window.innerHeight / 2);")
         time.sleep(random.uniform(0.5, 1.5))
@@ -64,10 +62,9 @@ def get_chapter_list():
     return chapters
 
 # ===== TẢI ẢNH THEO CHƯƠNG =====
-def download_images_from_chapter(chapter_name, chapter_url, save_root="invincible"):
+def download_images_from_chapter(chapter_name, chapter_url, save_root):
     print(f"🔗 Visiting: {chapter_url}")
     driver.get(chapter_url)
-    time.sleep(random.uniform(5, 8))
     human_scroll()
 
     if "Cloudflare" in driver.title or "Attention Required" in driver.page_source:
@@ -78,7 +75,7 @@ def download_images_from_chapter(chapter_name, chapter_url, save_root="invincibl
     os.makedirs(save_folder, exist_ok=True)
 
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-    time.sleep(2)
+    time.sleep(1)
 
     image_elements = driver.find_elements(By.CSS_SELECTOR, "div.list-images img")
     print(f"📸 Found {len(image_elements)} images")
@@ -109,8 +106,6 @@ def download_images_from_chapter(chapter_name, chapter_url, save_root="invincibl
         except Exception as e:
             print(f"❌ Failed to download {img_url}: {e}")
     print(f"Success get {success_images}/{len(image_elements)} images")
-    zip_path = zip_folder(save_folder)
-    upload_to_r2(zip_path, f"comics/{os.path.basename(zip_path)}")
     print(f"✅ Chapter done: {chapter_name}")
 
 

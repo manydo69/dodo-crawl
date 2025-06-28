@@ -18,7 +18,7 @@ def upload_to_r2(file_path, object_key):
         aws_access_key_id=access_key,
         aws_secret_access_key=secret_key,
         endpoint_url=endpoint_url,
-        region_name='auto',  # R2 không cần khu vực cụ thể
+        region_name='auto',
     )
 
     try:
