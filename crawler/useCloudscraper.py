@@ -1,6 +1,8 @@
 import os
 import time
+import random
 import cloudscraper
+from selenium.webdriver.common.keys import Keys
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
@@ -18,6 +20,18 @@ options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) Apple
 
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 driver.implicitly_wait(10)
+
+def random_pause():
+    wait_time = random.uniform(4, 9)
+    print(f"⏳ Waiting {wait_time:.1f} seconds like a human...")
+    time.sleep(wait_time)
+
+def human_scroll():
+    scroll_steps = random.randint(3, 6)
+    for _ in range(scroll_steps):
+        driver.execute_script("window.scrollBy(0, window.innerHeight / 2);")
+        time.sleep(random.uniform(0.5, 1.5))
+
 
 # ========= Hàm tải ảnh theo src =========
 def download_images_from_chapter(chapter_url, save_root="invincible"):
