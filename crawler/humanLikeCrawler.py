@@ -1,6 +1,8 @@
 import os
 import time
 import random
+import zipfile
+
 import cloudscraper
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -8,6 +10,8 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import Select
 from webdriver_manager.chrome import ChromeDriverManager
+
+from s3_API.api import upload_to_r2
 
 # ===== TẠO CLOUDSCRAPER BỎ QUA CLOUDFLARE =====
 scraper = cloudscraper.create_scraper(browser={'browser': 'chrome', 'platform': 'windows', 'mobile': False})
@@ -20,6 +24,17 @@ options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) Apple
 
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 driver.implicitly_wait(10)
+
+# ========= ZIP FOLDER =========
+def zip_folder(folder_path):
+    zip_path = folder_path + ".zip"
+    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for root, _, files in os.walk(folder_path):
+            for file in files:
+                abs_path = os.path.join(root, file)
+                rel_path = os.path.relpath(abs_path, folder_path)
+                zipf.write(abs_path, rel_path)
+    return zip_path
 
 # ===== MÔ PHỎNG HÀNH VI NGƯỜI DÙNG =====
 def random_pause():
@@ -67,13 +82,14 @@ def download_images_from_chapter(chapter_name, chapter_url, save_root="invincibl
 
     image_elements = driver.find_elements(By.CSS_SELECTOR, "div.list-images img")
     print(f"📸 Found {len(image_elements)} images")
+    success_images = 0
 
     for i, img in enumerate(image_elements):
         img_url = (
             img.get_attribute("src")
+            or img.get_attribute("alt")
             or img.get_attribute("data-src")
             or img.get_attribute("data-lazy-src")
-            or img.get_attribute("alt")
         )
         if img_url and " " in img_url:
             img_url = img_url.split(" ")[0]
@@ -88,18 +104,13 @@ def download_images_from_chapter(chapter_name, chapter_url, save_root="invincibl
             with open(file_path, "wb") as f:
                 f.write(img_data)
             print(f"✅ Saved: {file_path}")
+            success_images += 1
             time.sleep(random.uniform(0.2, 0.6))  # delay giữa ảnh
         except Exception as e:
             print(f"❌ Failed to download {img_url}: {e}")
-
+    print(f"Success get {success_images}/{len(image_elements)} images")
+    zip_path = zip_folder(save_folder)
+    upload_to_r2(zip_path, f"comics/{os.path.basename(zip_path)}")
     print(f"✅ Chapter done: {chapter_name}")
 
-# ===== MAIN =====
-all_chapters = get_chapter_list()
 
-for chapter_name, chapter_url in all_chapters:
-    download_images_from_chapter(chapter_name, chapter_url)
-    random_pause()
-
-driver.quit()
-print("🎉 All done.")
