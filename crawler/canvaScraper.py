@@ -26,6 +26,9 @@ def setup_driver():
 
 def capture_canvas_if_unique(canvas, idx, save_path, hash_set, driver):
     try:
+        print("Starting to capture canvas " + str(idx))
+        driver.execute_script("arguments[0].scrollIntoView({behavior: 'instant', block: 'center'});", canvas)
+        time.sleep(10)
         data_url = driver.execute_script(
             "return arguments[0].toDataURL('image/jpeg', 1.0);", canvas
         )
@@ -51,6 +54,7 @@ def capture_canvas_if_unique(canvas, idx, save_path, hash_set, driver):
 def extract_canvas_images(url: str, save_dir: str):
     driver = setup_driver()
     driver.get(url)
+    driver.execute_script("document.body.style.zoom='60%'")
     time.sleep(5)
 
     scroll_height = driver.execute_script("return document.body.scrollHeight")
