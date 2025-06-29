@@ -2,11 +2,11 @@ import shutil
 
 from crawler.humanLikeCrawler import *
 
-comic_folder = "invincible"
-comic_url = "https://langgeek.net/invincible/chuong-1-50/"
+comic_folder = "dark-nights-metal"
+comic_url = "https://langgeek.net/dark-nights-metal/1-dark-days-the-forge/"
 all_chapters = get_chapter_list(comic_url)
 
-for chapter_name, chapter_url in all_chapters[68:]:
+for chapter_name, chapter_url in all_chapters:
     download_images_from_chapter(chapter_name, chapter_url, save_root=comic_folder)
     random_pause()
 
