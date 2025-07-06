@@ -1,0 +1,12 @@
+selenium~=4.33.0
+webdriver_manager~=4.0.2
+undetected_chromedriver~=3.5.5
+requests~=2.32.4
+urllib3~=2.4.0
+boto3~=1.38.46
+python-dotenv~=1.1.1
+cloudscraper~=1.2.71
+dotenv~=0.9.9
+SQLAlchemy~=2.0.41
+pillow~=11.2.1
+apscheduler~=3.10.4
