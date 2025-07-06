@@ -1,24 +1,51 @@
-import shutil
+import argparse
+import logging
 
-from crawler.humanLikeCrawler import *
-from utils.slugify import slugify
+from scheduler.scheduler import start_scheduler, process_comic_jobs
 
-comic_folder = "dark-nights-metal"
-comic_url = "https://langgeek.net/dark-nights-metal/1-dark-days-the-forge/"
-all_chapters = get_chapter_list(comic_url)
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("comic_crawler.log"),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
-for chapter_name, chapter_url in all_chapters[9:]:
-    download_images_from_chapter(slugify(chapter_name), chapter_url, save_root=comic_folder)
-    random_pause()
+def main():
+    """
+    Main entry point for the comic crawler application.
 
-# 🔒 Zip full comic folder
-comic_zip = f"{comic_folder}.zip"
-shutil.make_archive(comic_folder, 'zip', root_dir=comic_folder)
-print(f"📦 Zipped: {comic_zip}")
+    Supports two modes:
+    1. scheduler: Start the scheduler to run daily
+    2. process: Process all new comic jobs immediately
+    """
+    parser = argparse.ArgumentParser(description='Comic Crawler Application')
+    parser.add_argument('mode', choices=['scheduler', 'process'], 
+                        help='Mode to run the application in')
 
-# 📤 Upload to R2
-upload_to_r2(comic_zip, f"comics/{comic_folder}.zip")
-print(f"✅ Uploaded: comics/{comic_folder}.zip")
+    args = parser.parse_args()
 
-driver.quit()
-print("🎉 All done.")
+    if args.mode == 'scheduler':
+        logger.info("Starting scheduler mode")
+        scheduler = start_scheduler()
+
+        try:
+            # Keep the script running
+            logger.info("Scheduler is running. Press Ctrl+C to exit")
+            import time
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            logger.info("Scheduler shutting down")
+            scheduler.shutdown()
+
+    elif args.mode == 'process':
+        logger.info("Starting process mode")
+        process_comic_jobs()
+        logger.info("Processing completed")
+
+if __name__ == "__main__":
+    main()
