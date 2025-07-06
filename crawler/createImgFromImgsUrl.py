@@ -14,7 +14,7 @@ import cloudscraper
 # Tạo thư mục chứa tile nếu chưa có
 os.makedirs("canvas_tiles", exist_ok=True)
 # 
-pathImgsUrl = '... path lưu file json chứa bộ nguồn ảnh cùng tọa độ';
+pathImgsUrl = '... path lưu file json chứa bộ nguồn ảnh cùng tọa độ'
 with open(pathImgsUrl, "r", encoding="utf-8") as f:
     draw_calls = json.load(f)
 
