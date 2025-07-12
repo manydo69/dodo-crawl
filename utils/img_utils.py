@@ -93,12 +93,11 @@ def unscramble_from_json(json_path, folder_path="results"):
         image_data.download_image(scraper)
         final_image = image_data.unscramble()
         if final_image:
-            # Create a clean filename from the URL
-            filename = os.path.basename(url).split('?')[0]
             save_path = f"result_{image_data.img_idx}.jpg"
             final_image.save(os.path.join(folder_path, save_path))
             print(f"Successfully saved: {save_path}")
 
+    return len(image_data_map)
 
 if __name__ == '__main__':
     json_path = "F:\myproject\dodo-crawl\crawler\canvas_draw_logs\canvas_draw_calls.json"
