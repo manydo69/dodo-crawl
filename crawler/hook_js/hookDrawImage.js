@@ -3,6 +3,7 @@
     const original = CanvasRenderingContext2D.prototype.drawImage;
     const logs = [];
 
+    console.log("[HOOK] Overriding drawImage...");
     CanvasRenderingContext2D.prototype.drawImage = function (...args) {
         try {
             const img = args[0];
