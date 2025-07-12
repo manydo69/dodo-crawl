@@ -13,8 +13,9 @@ logger = logging.getLogger(__name__)
 # Map of website domains to crawler modules
 CRAWLER_MAP = {
     'cuutruyen.net': 'crawler.crawlers.cuutruyenCrawler',
-    'langgeek.net': 'crawler.crawlers.humanLikeCrawler',
+    'langgeek.net': 'crawler.crawlers.langgeekCrawler',
     'nettruyen3q.com': 'crawler.crawlers.nettruyen3qCrawler',
+    'langgeek.net/invincible': 'crawler.crawlers.comicScrawlerWithUndetected',
     # Add more mappings as needed
 }
 
@@ -74,40 +75,28 @@ def crawl_comic(comic_job):
         comic_folder = slugify(comic_job.comic_folder_name)
         os.makedirs(comic_folder, exist_ok=True)
 
-        # Handle different crawler interfaces
-        if 'cuutruyen.net' in domain:
-            # cuutruyenCrawler has a crawler function that accepts url and comic_name
-            crawler_module.crawler(comic_job.comic_url, comic_name=comic_folder)
-        elif 'langgeek.net' in domain:
-            # humanLikeCrawler has separate functions for chapters and images
-            all_chapters = crawler_module.get_chapter_list(comic_job.comic_url)
-            for chapter_name, chapter_url in all_chapters:
-                crawler_module.download_images_from_chapter(
-                    slugify(chapter_name), 
-                    chapter_url, 
-                    save_root=comic_folder
-                )
-                crawler_module.random_pause()
+        # All crawlers now provide a common 'crawler' function
+        if hasattr(crawler_module, 'crawler'):
+            # Call the crawler function with the URL and comic folder name
+            crawler_module.crawler(
+                comic_job.comic_url,
+                comic_name=comic_folder,
+                chapter_name=None  # Default to None, crawler will handle this
+            )
+            logger.info(f"Successfully crawled comic: {comic_folder}")
 
-            # Zip the comic folder
-            comic_zip = f"{comic_folder}.zip"
-            crawler_module.zip_folder(comic_folder)
-
-            # Upload to R2 if available
-            try:
-                from s3_API.api import upload_to_r2
-                upload_to_r2(comic_zip, f"comics/{comic_folder}.zip")
-                logger.info(f"Uploaded: comics/{comic_folder}.zip")
-            except Exception as e:
-                logger.error(f"Failed to upload to R2: {e}")
+            # If this is a langgeek crawler, try to upload the zip file to R2
+            if 'langgeek' in crawler_module_name:
+                try:
+                    from s3_API.api import upload_to_r2
+                    comic_zip = f"{comic_folder}.zip"
+                    upload_to_r2(comic_zip, f"comics/{comic_folder}.zip")
+                    logger.info(f"Uploaded: comics/{comic_folder}.zip")
+                except Exception as e:
+                    logger.error(f"Failed to upload to R2: {e}")
         else:
-            # For other crawlers, try to find a common interface
-            # This is a simplified approach and may need to be expanded
-            if hasattr(crawler_module, 'crawler'):
-                crawler_module.crawler(comic_job.comic_url)
-            else:
-                logger.error(f"Unsupported crawler interface for {domain_pattern}")
-                return False
+            logger.error(f"Unsupported crawler interface for {domain}")
+            return False
 
         return True
     except Exception as e:

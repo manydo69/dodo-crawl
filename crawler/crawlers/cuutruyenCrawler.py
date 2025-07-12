@@ -7,11 +7,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
-from crawler.Crawler import Crawler
+from crawler.ComicCrawler import ComicCrawler
 from utils.img_utils import unscramble_from_json
 
 
-class CuutruyenCrawler(Crawler):
+class CuutruyenComicCrawler(ComicCrawler):
     def __init__(self):
         super().__init__()
         self.comic_name = 'jojo_v7'  # Default comic name
@@ -148,7 +148,7 @@ def crawler(url, comic_name='jojo_v7', chapter_name='chapter_1'):
         comic_name (str, optional): Name of the comic. Defaults to 'jojo_v7'.
         chapter_name (str, optional): Name of the chapter. Defaults to 'chapter_1'.
     """
-    crawler_instance = CuutruyenCrawler()
+    crawler_instance = CuutruyenComicCrawler()
     crawler_instance.crawl(url, comic_name, chapter_name)
 
 

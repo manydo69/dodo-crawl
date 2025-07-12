@@ -1,4 +1,4 @@
-class Crawler:
+class ComicCrawler:
     def __init__(self):
         self.driver = None
         self.url = None
