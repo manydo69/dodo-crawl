@@ -170,8 +170,22 @@ def crawler(url, comic_name='jojo_v7', chapter_name='chapter_1', base_dir="resul
 
 # For direct execution
 if __name__ == "__main__":
-    target_url = "https://cuutruyen.net/mangas/805/chapters/65713"
-    comic_name = 'jojo_v7'
-    chapter_name = 'chapter_70'
+    import argparse
+
+    # Set up argument parser
+    parser = argparse.ArgumentParser(description='Cuutruyen Comic Crawler')
+    parser.add_argument('--url', type=str, default="https://cuutruyen.net/mangas/805/chapters/65713",
+                        help='URL to crawl')
+    parser.add_argument('--comic', type=str, default='jojo_v7',
+                        help='Name of the comic')
+    parser.add_argument('--chapter', type=str, default='chapter_70',
+                        help='Name of the chapter')
+
+    args = parser.parse_args()
+
+    target_url = args.url
+    comic_name = args.comic
+    chapter_name = args.chapter
     comic_dir = os.environ.get("COMIC_DIR")
+
     crawler(target_url, comic_name, chapter_name, comic_dir)
