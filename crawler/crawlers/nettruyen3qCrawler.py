@@ -6,8 +6,8 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
-from crawler.ComicCrawler import ComicCrawler
-from s3_API.api import upload_folder_to_r2
+from dodo_crawl.crawler.ComicCrawler import ComicCrawler
+from dodo_crawl.s3_API.api import upload_folder_to_r2
 
 
 class Nettruyen3qCrawler(ComicCrawler):
