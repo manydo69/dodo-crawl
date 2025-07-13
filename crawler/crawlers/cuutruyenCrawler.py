@@ -9,13 +9,15 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 from crawler.ComicCrawler import ComicCrawler
 from utils.img_utils import unscramble_from_json
+from s3_API.api import upload_folder_to_r2
 
 
 class CuutruyenComicCrawler(ComicCrawler):
-    def __init__(self):
+    def __init__(self, base_dir="results"):
         super().__init__()
         self.comic_name = 'jojo_v7'  # Default comic name
         self.chapter_name = 'chapter_1'  # Default chapter name
+        self.base_dir = base_dir  # Base directory for saving files
 
     def loadJsonScript(self):
         js_file_path = "F:\\myproject\\dodo-crawl\\crawler\\hook_js\\hookDrawImage.js"
@@ -108,9 +110,17 @@ class CuutruyenComicCrawler(ComicCrawler):
 
         # Crawl the initial page
         _, output_file_path, number_canvas = self.crawl_page(self.driver, url)
-        save_folder = f"F:\\myproject\\dodo-crawl\\results\\{self.comic_name}\\{self.chapter_name}"
+        save_folder = os.path.join(self.base_dir, self.comic_name, self.chapter_name)
         image_get = unscramble_from_json(output_file_path, save_folder)
         print(f"Draw calls data: {image_get}/{number_canvas}")
+
+        # Upload the downloaded folder to R2 storage
+        try:
+            print(f"☁️ Uploading folder to R2 storage: {save_folder}")
+            upload_success, upload_errors = upload_folder_to_r2(save_folder, f"{self.comic_name}/{self.chapter_name}")
+            print(f"☁️ Upload complete: {upload_success} files uploaded, {upload_errors} files failed")
+        except Exception as e:
+            print(f"❌ Error uploading folder to R2: {e}")
 
         # Crawl subsequent chapters
         while True:
@@ -123,9 +133,17 @@ class CuutruyenComicCrawler(ComicCrawler):
                 print(f"➡️ Going to next chapter: {next_href}")
                 self.chapter_name = self.chapter_name.split("_")[0] + "_" + str(int(self.chapter_name.split("_")[1]) + 1)
                 _, output_file_path, number_canvas = self.crawl_page(self.driver, next_href)
-                save_folder = f"F:\\myproject\\dodo-crawl\\results\\{self.comic_name}\\{self.chapter_name}"
+                save_folder = os.path.join(self.base_dir, self.comic_name, self.chapter_name)
                 image_get = unscramble_from_json(output_file_path, save_folder)
                 print(f"Draw calls data: {image_get}/{number_canvas}")
+
+                # Upload the downloaded folder to R2 storage
+                try:
+                    print(f"☁️ Uploading folder to R2 storage: {save_folder}")
+                    upload_success, upload_errors = upload_folder_to_r2(save_folder, f"{self.comic_name}/{self.chapter_name}")
+                    print(f"☁️ Upload complete: {upload_success} files uploaded, {upload_errors} files failed")
+                except Exception as e:
+                    print(f"❌ Error uploading folder to R2: {e}")
 
                 time.sleep(2)
             except Exception as e:
@@ -139,7 +157,7 @@ class CuutruyenComicCrawler(ComicCrawler):
 
 
 # Compatibility function for crawler_manager
-def crawler(url, comic_name='jojo_v7', chapter_name='chapter_1'):
+def crawler(url, comic_name='jojo_v7', chapter_name='chapter_1', base_dir="results"):
     """
     Compatibility function for the crawler_manager.
 
@@ -147,14 +165,26 @@ def crawler(url, comic_name='jojo_v7', chapter_name='chapter_1'):
         url (str): URL to crawl
         comic_name (str, optional): Name of the comic. Defaults to 'jojo_v7'.
         chapter_name (str, optional): Name of the chapter. Defaults to 'chapter_1'.
+        base_dir (str, optional): Base directory for saving files. Defaults to "results".
     """
-    crawler_instance = CuutruyenComicCrawler()
+    # Create and run the crawler instance
+    crawler_instance = CuutruyenComicCrawler(base_dir=base_dir)
     crawler_instance.crawl(url, comic_name, chapter_name)
+
+    # Upload the downloaded folder to R2 storage
+    save_folder = str(os.path.join(base_dir, comic_name, chapter_name))
+    try:
+        print(f"☁️ Uploading folder to R2 storage from crawler function: {save_folder}")
+        upload_success, upload_errors = upload_folder_to_r2(save_folder, f"comics/{comic_name}/{chapter_name}")
+        print(f"☁️ Upload complete: {upload_success} files uploaded, {upload_errors} files failed")
+    except Exception as e:
+        print(f"❌ Error uploading folder to R2 from crawler function: {e}")
 
 
 # For direct execution
 if __name__ == "__main__":
-    target_url = "https://cuutruyen.net/mangas/805/chapters/30899"
+    target_url = "https://cuutruyen.net/mangas/805/chapters/65713"
     comic_name = 'jojo_v7'
-    chapter_name = 'chapter_38'
-    crawler(target_url, comic_name, chapter_name)
+    chapter_name = 'chapter_70'
+    base_dir = "results"
+    crawler(target_url, comic_name, chapter_name, base_dir)
