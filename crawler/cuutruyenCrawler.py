@@ -1,15 +1,18 @@
 import time
 import os
 import json
+import sys
 from tqdm import tqdm
+
+# Add the parent directory to the Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-
-from crawler.ComicCrawler import ComicCrawler
-from s3_API.api import upload_folder_to_r2
-from utils.img_utils import unscramble_from_json
+from utils import unscramble_from_json
+from s3_API import upload_folder_to_r2
+from crawler import ComicCrawler
 
 
 class CuutruyenComicCrawler(ComicCrawler):
@@ -21,7 +24,7 @@ class CuutruyenComicCrawler(ComicCrawler):
 
     def loadJsonScript(self):
         # Use a relative path that works on both Windows and Linux
-        js_file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "hook_js", "hookDrawImage.js")
+        js_file_path = os.path.join(os.path.dirname(__file__), "hook_js", "hookDrawImage.js")
         print(f"JavaScript file path: {js_file_path}")
         print(f"File exists: {os.path.exists(js_file_path)}")
         with open(js_file_path, 'r', encoding='utf-8') as file:
