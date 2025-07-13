@@ -159,7 +159,7 @@ def crawler(url, comic_name='jojo_v7', chapter_name='chapter_1', base_dir="resul
     crawler_instance.crawl(url, comic_name, chapter_name)
 
     # Upload the downloaded folder to R2 storage
-    save_folder = str(os.path.join(base_dir, comic_name, chapter_name))
+    save_folder = str(os.path.join(base_dir, comic_name))
     try:
         print(f"☁️ Uploading folder to R2 storage from crawler function: {save_folder}")
         upload_success, upload_errors = upload_folder_to_r2(save_folder, f"comics/{comic_name}/{chapter_name}")
