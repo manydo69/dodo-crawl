@@ -7,6 +7,7 @@ from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
 from crawler.ComicCrawler import ComicCrawler
+from s3_API.api import upload_folder_to_r2
 
 
 class Nettruyen3qCrawler(ComicCrawler):
@@ -106,6 +107,14 @@ class Nettruyen3qCrawler(ComicCrawler):
         success_count = self.download_images(image_urls, save_folder)
 
         print(f"✅ Completed chapter: {chapter_name} ({success_count}/{len(image_urls)} images)")
+
+        # Upload the downloaded folder to R2 storage
+        try:
+            print(f"☁️ Uploading folder to R2 storage: {save_folder}")
+            upload_success, upload_errors = upload_folder_to_r2(save_folder, f"{self.comic_name}/{chapter_name}")
+            print(f"☁️ Upload complete: {upload_success} files uploaded, {upload_errors} files failed")
+        except Exception as e:
+            print(f"❌ Error uploading folder to R2: {e}")
 
     def web_code(self):
         return "NETTRUYEN3Q"
