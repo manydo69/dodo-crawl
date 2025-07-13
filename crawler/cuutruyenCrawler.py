@@ -162,7 +162,7 @@ def crawler(url, comic_name='jojo_v7', chapter_name='chapter_1', base_dir="resul
     save_folder = str(os.path.join(base_dir, comic_name))
     try:
         print(f"☁️ Uploading folder to R2 storage from crawler function: {save_folder}")
-        upload_success, upload_errors = upload_folder_to_r2(save_folder, f"comics/{comic_name}/{chapter_name}")
+        upload_success, upload_errors = upload_folder_to_r2(save_folder, f"comics/{comic_name}")
         print(f"☁️ Upload complete: {upload_success} files uploaded, {upload_errors} files failed")
     except Exception as e:
         print(f"❌ Error uploading folder to R2 from crawler function: {e}")
