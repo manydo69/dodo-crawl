@@ -1,7 +1,7 @@
 import os
 import importlib
 import logging
-from dodo_crawl.utils.slugify import slugify
+from utils import slugify
 
 # Configure logging
 logging.basicConfig(
@@ -12,10 +12,10 @@ logger = logging.getLogger(__name__)
 
 # Map of website domains to crawler modules
 CRAWLER_MAP = {
-    'cuutruyen.net': 'dodo_crawl.crawler.crawlers.cuutruyenCrawler',
-    'langgeek.net': 'dodo_crawl.crawler.crawlers.langgeekCrawler',
-    'nettruyen3q.com': 'dodo_crawl.crawler.crawlers.nettruyen3qCrawler',
-    'langgeek.net/invincible': 'dodo_crawl.crawler.crawlers.comicScrawlerWithUndetected',
+    'cuutruyen.net': 'crawler.crawlers.cuutruyenCrawler',
+    'langgeek.net': 'crawler.crawlers.langgeekCrawler',
+    'nettruyen3q.com': 'crawler.crawlers.nettruyen3qCrawler',
+    'langgeek.net/invincible': 'crawler.crawlers.comicScrawlerWithUndetected',
     # Add more mappings as needed
 }
 
@@ -88,7 +88,7 @@ def crawl_comic(comic_job):
             # If this is a langgeek crawler, try to upload the zip file to R2
             if 'langgeek' in crawler_module_name:
                 try:
-                    from dodo_crawl.s3_API.api import upload_to_r2
+                    from s3_API import upload_to_r2
                     comic_zip = f"{comic_folder}.zip"
                     upload_to_r2(comic_zip, f"comics/{comic_folder}.zip")
                     logger.info(f"Uploaded: comics/{comic_folder}.zip")
