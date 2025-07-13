@@ -8,8 +8,8 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
 from crawler.ComicCrawler import ComicCrawler
-from utils.img_utils import unscramble_from_json
 from s3_API.api import upload_folder_to_r2
+from utils.img_utils import unscramble_from_json
 
 
 class CuutruyenComicCrawler(ComicCrawler):
@@ -20,7 +20,8 @@ class CuutruyenComicCrawler(ComicCrawler):
         self.base_dir = base_dir  # Base directory for saving files
 
     def loadJsonScript(self):
-        js_file_path = "F:\\myproject\\dodo-crawl\\crawler\\hook_js\\hookDrawImage.js"
+        # Use a relative path that works on both Windows and Linux
+        js_file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "hook_js", "hookDrawImage.js")
         print(f"JavaScript file path: {js_file_path}")
         print(f"File exists: {os.path.exists(js_file_path)}")
         with open(js_file_path, 'r', encoding='utf-8') as file:
@@ -114,14 +115,6 @@ class CuutruyenComicCrawler(ComicCrawler):
         image_get = unscramble_from_json(output_file_path, save_folder)
         print(f"Draw calls data: {image_get}/{number_canvas}")
 
-        # Upload the downloaded folder to R2 storage
-        try:
-            print(f"☁️ Uploading folder to R2 storage: {save_folder}")
-            upload_success, upload_errors = upload_folder_to_r2(save_folder, f"{self.comic_name}/{self.chapter_name}")
-            print(f"☁️ Upload complete: {upload_success} files uploaded, {upload_errors} files failed")
-        except Exception as e:
-            print(f"❌ Error uploading folder to R2: {e}")
-
         # Crawl subsequent chapters
         while True:
             try:
@@ -136,15 +129,6 @@ class CuutruyenComicCrawler(ComicCrawler):
                 save_folder = os.path.join(self.base_dir, self.comic_name, self.chapter_name)
                 image_get = unscramble_from_json(output_file_path, save_folder)
                 print(f"Draw calls data: {image_get}/{number_canvas}")
-
-                # Upload the downloaded folder to R2 storage
-                try:
-                    print(f"☁️ Uploading folder to R2 storage: {save_folder}")
-                    upload_success, upload_errors = upload_folder_to_r2(save_folder, f"{self.comic_name}/{self.chapter_name}")
-                    print(f"☁️ Upload complete: {upload_success} files uploaded, {upload_errors} files failed")
-                except Exception as e:
-                    print(f"❌ Error uploading folder to R2: {e}")
-
                 time.sleep(2)
             except Exception as e:
                 print(f"✅ Reached last chapter or next button not found: {e}")
@@ -186,5 +170,5 @@ if __name__ == "__main__":
     target_url = "https://cuutruyen.net/mangas/805/chapters/65713"
     comic_name = 'jojo_v7'
     chapter_name = 'chapter_70'
-    base_dir = "results"
-    crawler(target_url, comic_name, chapter_name, base_dir)
+    comic_dir = os.environ.get("COMIC_DIR")
+    crawler(target_url, comic_name, chapter_name, comic_dir)
